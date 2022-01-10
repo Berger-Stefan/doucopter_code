@@ -1,6 +1,6 @@
-# Code for the doucopter project 
+# Code for the duocopter project 
 
 This is a project aims to create a drone to fly on only two rotor that can be rotated by 2 servo motors.
 
 
-![doucopterImage](doucopterImage.jpg "doucopterImage")
+![duocopterImage](duocopterImage.jpg "duocopterImage")
