@@ -1,3 +1,4 @@
+// test
 // library incldues
 #include "MPU9250.h"
 #include "ESP32Servo.h"
@@ -8,23 +9,23 @@
 #include <HTTPClient.h>
 
 // defines for the pins
-#define SERVO_PIN_L 1
-#define SERVO_PIN_R 2
-#define ESC_PIN_L 3
+#define SERVO_PIN_L 14
+#define SERVO_PIN_R 12
+#define ESC_PIN_L 2
 #define ESC_PIN_R 4
 #define MPU_PIN_SDA  21    // I2C default SDA GPIO21
 #define MPU_PIN_SCL  22    // I2C default SCL GPIO22
-#define DIS_PIN_TRIG 5    // pin for the ultrasound distance sensor
-#define DIS_PIN_ECHO 6    // pin for the ultrasound distance sensor
+#define DIS_PIN_TRIG 14    // pin for the ultrasound distance sensor
+#define DIS_PIN_ECHO 12    // pin for the ultrasound distance sensor
 
 
 // defines for settings
 #define CALIBRATE_ACC false
 #define CALIBRATE_MAG false
-#define SEND_SENSOR_DATA false
+#define SEND_SENSOR_DATA true
 
 // defines for PID settings
-#define PID_UPDATE_INTERVAL 1000 	//update intervall in ms
+#define PID_UPDATE_INTERVAL 1000   //update intervall in ms
 #define ROLL_P .12
 #define ROLL_I .0003
 #define ROLL_D 0.0
@@ -47,9 +48,9 @@ MPU9250 mpu;      // create a object for the MPU communication
 
 HCSR04 distance_sensor(DIS_PIN_TRIG, DIS_PIN_ECHO); //initialisation class HCSR04 (trig pin , echo pin)
 
-double orientation[3];	// array for the orientaion pitch / roll / yaw
+double orientation[3];  // array for the orientaion pitch / roll / yaw
 double height;
-double control_variables[4];	// array for the controll variables servo_l, servo_r, esc_l, esc_r
+double control_variables[4];  // array for the controll variables servo_l, servo_r, esc_l, esc_r
 
 // https://r-downing.github.io/AutoPID/#basic-temperature-control PID lib
 double roll_pid_output = 0;
@@ -63,8 +64,8 @@ AutoPID height_pid_controller( &height, &height_pid_output, &height_pid_setPoint
                                -90, 90, HEIGHT_P, HEIGHT_I, HEIGHT_D );
 
 // DATA TRANSFER STUFF
-const char* ssid = "Vodafone-2D47";
-const char* password = "N4cqLeuaE66UbrdJ";
+const char* ssid = "DVEa7gZu Gastzugang";
+const char* password = "";
 
 //Your Domain name with URL path or IP address with path
 String serverName = "http://192.168.0.117:1880/update-sensor";
@@ -109,7 +110,14 @@ void setup()
   // connect to network and server
   if (SEND_SENSOR_DATA)
   {
-    WiFi.begin(ssid, password);
+    if (password[0]== '\0') 
+    {
+      WiFi.begin(ssid);
+    }
+    else
+    {
+      WiFi.begin(ssid, password);
+    }
     Serial.println("Connecting");
     while (WiFi.status() != WL_CONNECTED)
     {
@@ -145,10 +153,10 @@ void loop() {
   }
 
   // use PID controller to compute new control variables
-  update_control_loop();
+ // update_control_loop();
 
   // update and set the new control variables
-  update_controls();
+  //update_controls();
 }
 
 void update_height()
@@ -192,7 +200,7 @@ void update_control_loop()
   roll_pid_controller.run();
 
   // controll variable logic for the roll
-  control_variables[1] += roll_pid_output;	// TODO check signs
+  control_variables[1] += roll_pid_output;  // TODO check signs
   control_variables[2] -= roll_pid_output;
 
   // TODO add compensation for pitch angle 
@@ -209,8 +217,7 @@ void post_data()
   // Data to send with HTTP POST
   String httpRequestData = "value1=" + String(orientation[0]) +
                            "&value2=" + String(orientation[1]) +
-                           "&value3=" + String(orientation[2]) +
-                           "&value3=" + String(height);
+                           "&value3=" + String(orientation[2]);
   // Send HTTP POST request
   int httpResponseCode = http.POST(httpRequestData);
 };
