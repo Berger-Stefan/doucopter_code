@@ -68,7 +68,7 @@ const char* ssid = "DVEa7gZu Gastzugang";
 const char* password = "";
 
 //Your Domain name with URL path or IP address with path
-String serverName = "http://192.168.0.117:1880/update-sensor";
+String serverName = "http://127.0.0.1:1880/update-sensor";
 
 // function declarations
 void update_height();
@@ -90,6 +90,7 @@ void setup()
   mpu.setup(0x68);
 
   // calibrate the mpu
+  mpu.verbose(true);
   if (CALIBRATE_ACC)
   {
     Serial.println("setup Gyro");
@@ -100,6 +101,7 @@ void setup()
     Serial.println("setup Mag");
     mpu.calibrateMag();
   }
+  mpu.verbose(false);
 
   // initalize servos
   servo_l.attach(SERVO_PIN_L);
@@ -146,14 +148,14 @@ void loop() {
   update_orientation();
 
   // send sensor data to server
-  if (SEND_SENSOR_DATA)
-  {
-    if (WiFi.status() == WL_CONNECTED)
-      post_data();
-  }
+//  if (SEND_SENSOR_DATA)
+//  {
+//    if (WiFi.status() == WL_CONNECTED)
+//      post_data();
+//  }
 
   // use PID controller to compute new control variables
- // update_control_loop();
+  // update_control_loop();
 
   // update and set the new control variables
   //update_controls();
@@ -168,9 +170,11 @@ void update_height()
 
 void update_orientation()
 {
+  mpu.update();
   orientation[0] = mpu.getPitch();
   orientation[1] = mpu.getRoll();
   orientation[2] = mpu.getYaw();
+  Serial.println(orientation[0]);
 }
 
 void update_controls()
@@ -211,13 +215,16 @@ void post_data()
   WiFiClient client;
   HTTPClient http;
   // Your Domain name with URL path or IP address with path
-  http.begin(client, serverName);
+  http.begin(serverName);
   // Specify content-type header
-  http.addHeader("Content-Type", "application/x-www-form-urlencoded");
+  http.addHeader("Content-Type", "text/plain");
   // Data to send with HTTP POST
-  String httpRequestData = "value1=" + String(orientation[0]) +
-                           "&value2=" + String(orientation[1]) +
-                           "&value3=" + String(orientation[2]);
+  //String httpRequestData = "value1=" + String(orientation[0]) +
+//                           "&value2=" + String(orientation[1]) +
+//                           "&value3=" + String(orientation[2]) +
+//                           "&value4=" + String(height);
+  String httpRequestData= "Test";
   // Send HTTP POST request
   int httpResponseCode = http.POST(httpRequestData);
+  Serial.println(httpResponseCode);
 };
